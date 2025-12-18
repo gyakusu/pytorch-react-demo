@@ -1,14 +1,25 @@
 import React, { useState, FormEvent, useCallback, useMemo } from 'react';
 import './App.css';
-import { FeatureInput, ErrorDisplay, PredictionDisplay } from './components';
+import { FeatureInput, ErrorDisplay, PredictionDisplay, TabBar, TabPanel } from './components';
 import { usePrediction } from './hooks/usePrediction';
+import { useTabs } from './hooks/useTabs';
 import { updateAtIndex, parseFeatures, areAllFeaturesValid } from './utils/featureValidation';
+import type { TabMeta } from './types/tabs';
 
 const DEFAULT_FEATURES = ['1.0', '2.0', '3.0', '4.0', '5.0'];
+
+// タブメタデータ定義（純粋データ）
+const TAB_METAS: readonly TabMeta[] = [
+  { id: 'tab1', label: 'Tab 1' },
+  { id: 'tab2', label: 'Tab 2' },
+  { id: 'tab3', label: 'Tab 3' },
+  { id: 'tab4', label: 'Tab 4' },
+] as const;
 
 function App() {
   const [features, setFeatures] = useState<string[]>(DEFAULT_FEATURES);
   const { result: prediction, loading, error, predict, reset: resetPrediction, setError } = usePrediction();
+  const { activeTab, currentTabContext, switchTab, updateTabContext } = useTabs();
 
   // 純粋関数を使った不変な配列更新（useCallbackで安定化）
   const handleInputChange = useCallback((index: number, value: string): void => {
@@ -54,10 +65,21 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>機械学習予測システム</h1>
-        <p>5つの特徴量を入力して予測を取得</p>
+        <p>5つの特徴量を入力して予測を取得（タブ機能付き）</p>
       </header>
 
       <main className="main-content">
+        {/* タブバー */}
+        <TabBar tabs={TAB_METAS} activeTab={activeTab} onTabClick={switchTab} />
+
+        {/* タブパネル */}
+        <TabPanel
+          tabId={activeTab}
+          inputValue={currentTabContext.inputValue}
+          onInputChange={updateTabContext}
+        />
+
+        {/* 既存の機械学習予測機能 */}
         <form onSubmit={handleSubmit} className="prediction-form">
           <h2>特徴量入力</h2>
           <div className="feature-inputs">
