@@ -536,7 +536,6 @@ body {
   justify-content: flex-end;
   padding-right: 0.75rem;
   transition: width 0.4s ease;
-  min-width: 50px;
 }
 
 .prediction-bar-item.recommended .prediction-bar-fill {
@@ -547,6 +546,13 @@ body {
   color: white;
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+.prediction-bar-value-outside {
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
 }
 
 .recommendation-badge {

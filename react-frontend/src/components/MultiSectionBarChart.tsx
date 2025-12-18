@@ -1,23 +1,24 @@
 import React, { memo } from 'react';
 import type { SectionResult, PredictionItem } from '../types/bearing';
 
-// 確率バー（8行、ネスト1）
+// 確率バー（14行、ネスト2）
 const BarItem = memo<PredictionItem & { isRecommended: boolean }>(
-  ({ className, probability, isRecommended }) => (
-    <div className={`prediction-bar-item ${isRecommended ? 'recommended' : ''}`}>
-      <span className="prediction-bar-label">{className}</span>
-      <div className="prediction-bar-track">
-        <div
-          className="prediction-bar-fill"
-          style={{ width: `${probability * 100}%` }}
-        >
-          <span className="prediction-bar-value">
-            {(probability * 100).toFixed(1)}%
-          </span>
+  ({ className, probability, isRecommended }) => {
+    const percentage = (probability * 100).toFixed(1);
+    const isSmall = probability < 0.05;
+
+    return (
+      <div className={`prediction-bar-item ${isRecommended ? 'recommended' : ''}`}>
+        <span className="prediction-bar-label">{className}</span>
+        <div className="prediction-bar-track">
+          <div className="prediction-bar-fill" style={{ width: `${probability * 100}%` }}>
+            {!isSmall && <span className="prediction-bar-value">{percentage}%</span>}
+          </div>
         </div>
+        {isSmall && <span className="prediction-bar-value-outside">{percentage}%</span>}
       </div>
-    </div>
-  )
+    );
+  }
 );
 
 BarItem.displayName = 'BarItem';

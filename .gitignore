@@ -257,12 +257,16 @@ Thumbs.db
 
 # Data files
 *.csv
-*.json
 *.xml
 *.xlsx
 *.tsv
 data/
 datasets/
+
+# Allow package.json files for npm projects
+!package.json
+!package-lock.json
+!tsconfig.json
 
 # Jupyter notebooks (uncomment if you don't want to track them)
 # *.ipynb
