@@ -1,8 +1,10 @@
-import React, { memo, ChangeEvent, useCallback } from 'react';
+import React, { memo, ChangeEvent, useCallback, useState, useEffect } from 'react';
 import type { TabId } from '../types/tabs';
 import type { ParamKey } from '../types/params';
-import { HorizontalBarChart } from './HorizontalBarChart';
+import type { SectionResult } from '../types/bearing';
+import { MultiSectionBarChart } from './MultiSectionBarChart';
 import { ParameterSelector } from './ParameterSelector';
+import { mockPredictAPI, transformResponse, SAMPLE_BEARING_INPUT } from '../utils/bearingPrediction';
 
 interface TabPanelProps {
   tabId: TabId;
@@ -48,6 +50,29 @@ export const TabPanel = memo<TabPanelProps>(({
   onParamSelectionChange,
   onParamValueChange,
 }) => {
+  const [sections, setSections] = useState<readonly SectionResult[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // モックAPIからデータ取得（Tab1のみ）
+  useEffect(() => {
+    if (tabId !== 'tab1') return;
+
+    const fetchPrediction = async () => {
+      setLoading(true);
+      try {
+        const response = await mockPredictAPI(SAMPLE_BEARING_INPUT);
+        const transformed = transformResponse(response);
+        setSections(transformed);
+      } catch (error) {
+        console.error('予測データの取得に失敗:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrediction();
+  }, [tabId]);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onInputChange(tabId, e.target.value);
   };
@@ -83,7 +108,11 @@ export const TabPanel = memo<TabPanelProps>(({
         </div>
         {isTab1 && (
           <div className="right-column">
-            <HorizontalBarChart />
+            {loading ? (
+              <div>読み込み中...</div>
+            ) : (
+              <MultiSectionBarChart sections={sections} />
+            )}
           </div>
         )}
       </div>
