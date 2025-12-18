@@ -1,71 +1,54 @@
-import React, { useState, FormEvent, ChangeEvent } from 'react';
+import React, { useState, FormEvent, useCallback, useMemo } from 'react';
 import './App.css';
-
-interface PredictionResult {
-  prediction: number;
-  confidence: number;
-}
+import { FeatureInput, ErrorDisplay, PredictionDisplay } from './components';
+import { usePrediction } from './hooks/usePrediction';
+import { updateAtIndex, parseFeatures, areAllFeaturesValid } from './utils/featureValidation';
 
 const DEFAULT_FEATURES = ['1.0', '2.0', '3.0', '4.0', '5.0'];
 
 function App() {
   const [features, setFeatures] = useState<string[]>(DEFAULT_FEATURES);
-  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const { result: prediction, loading, error, predict, reset: resetPrediction, setError } = usePrediction();
 
-  const handleInputChange = (index: number, value: string): void => {
-    const newFeatures = [...features];
-    newFeatures[index] = value;
-    setFeatures(newFeatures);
-  };
+  // 純粋関数を使った不変な配列更新（useCallbackで安定化）
+  const handleInputChange = useCallback((index: number, value: string): void => {
+    setFeatures(current => updateAtIndex(current, index, value));
+  }, []);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  // フォーム送信ハンドラ（関数型エラーハンドリング）
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setPrediction(null);
 
-    try {
-      // 文字列を数値に変換
-      const numericFeatures = features.map(feature => {
-        const num = parseFloat(feature);
-        if (isNaN(num)) {
-          throw new Error('すべての値は数値である必要があります');
-        }
-        return num;
-      });
+    // 純粋関数を使って検証と変換
+    const result = parseFeatures(features);
 
-      const response = await fetch('http://127.0.0.1:8100/predict', {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          features: numericFeatures
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('予測の取得に失敗しました');
-      }
-
-      const result: PredictionResult = await response.json();
-      setPrediction(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'エラーが発生しました');
-    } finally {
-      setLoading(false);
+    // Result型のパターンマッチング風の処理
+    if (!result.success) {
+      setError(result.error);
+      return;
     }
-  };
 
-  const handleReset = (): void => {
+    // 成功の場合は予測を実行
+    await predict(result.data);
+  }, [features, predict, setError]);
+
+  // リセットハンドラ（複数の状態を一度にリセット）
+  const handleReset = useCallback((): void => {
     setFeatures(DEFAULT_FEATURES);
-    setPrediction(null);
-    setError('');
-  };
+    resetPrediction();
+  }, [resetPrediction]);
+
+  // ボタンの無効化状態をメモ化（再計算を避ける）
+  const isSubmitDisabled = useMemo(
+    () => loading || !areAllFeaturesValid(features),
+    [loading, features]
+  );
+
+  // ボタンのテキストをメモ化
+  const submitButtonText = useMemo(
+    () => loading ? '予測中...' : '予測実行',
+    [loading]
+  );
 
   return (
     <div className="App">
@@ -79,30 +62,22 @@ function App() {
           <h2>特徴量入力</h2>
           <div className="feature-inputs">
             {features.map((feature, index) => (
-              <div key={index} className="input-group">
-                <label htmlFor={`feature-${index}`}>
-                  特徴量 {index + 1}:
-                </label>
-                <input
-                  id={`feature-${index}`}
-                  type="number"
-                  step="any"
-                  value={feature}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(index, e.target.value)}
-                  placeholder={`特徴量${index + 1}を入力`}
-                  required
-                />
-              </div>
+              <FeatureInput
+                key={index}
+                index={index}
+                value={feature}
+                onChange={handleInputChange}
+              />
             ))}
           </div>
 
           <div className="button-group">
             <button
               type="submit"
-              disabled={loading || features.some(f => f === '')}
+              disabled={isSubmitDisabled}
               className="predict-button"
             >
-              {loading ? '予測中...' : '予測実行'}
+              {submitButtonText}
             </button>
             <button
               type="button"
@@ -114,36 +89,8 @@ function App() {
           </div>
         </form>
 
-        {error && (
-          <div className="error-message">
-            <h3>エラー</h3>
-            <p>{error}</p>
-          </div>
-        )}
-
-        {prediction && (
-          <div className="prediction-result">
-            <h3>予測結果</h3>
-            <div className="result-details">
-              <div className="result-item">
-                <span className="label">予測クラス:</span>
-                <span className="value prediction-class">{prediction.prediction}</span>
-              </div>
-              <div className="result-item">
-                <span className="label">信頼度:</span>
-                <span className="value confidence">
-                  {(prediction.confidence * 100).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            <div className="confidence-bar">
-              <div
-                className="confidence-fill"
-                style={{ width: `${prediction.confidence * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
+        {error && <ErrorDisplay error={error} />}
+        {prediction && <PredictionDisplay prediction={prediction} />}
       </main>
     </div>
   );
