@@ -476,6 +476,104 @@ body {
   font-weight: 600;
 }
 
+/* マルチセクション棒グラフスタイル */
+.multi-section-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.prediction-section-block {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #667eea;
+}
+
+.prediction-section-title {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.prediction-bars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.prediction-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.prediction-bar-label {
+  min-width: 100px;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.prediction-bar-track {
+  flex: 1;
+  height: 32px;
+  background: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.prediction-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #48c6ef 0%, #6f86d6 100%);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  transition: width 0.4s ease;
+  min-width: 50px;
+}
+
+.prediction-bar-item.recommended .prediction-bar-fill {
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+}
+
+.prediction-bar-value {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.recommendation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #d4edda;
+  color: #155724;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #c3e6cb;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.recommendation-badge .checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
   .App-header h1 {
     font-size: 2rem;
@@ -512,5 +610,16 @@ body {
 
   .param-input-wrapper {
     width: 100%;
+  }
+
+  /* レスポンシブ: 予測バーラベルを縦並びに */
+  .prediction-bar-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .prediction-bar-label {
+    min-width: unset;
   }
 }
