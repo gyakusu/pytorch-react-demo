@@ -28,7 +28,7 @@ const ParamCheckboxRow = memo<{
     </label>
     {isSelected && (
       <div className="param-input-wrapper">
-        <span className="param-input-label">入力:</span>
+        <span className="param-input-label">:</span>
         <input
           type="text"
           value={value}
