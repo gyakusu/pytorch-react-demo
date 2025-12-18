@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 import './App.css';
 
-function App() {
-  const [features, setFeatures] = useState(['', '', '', '', '']);
-  const [prediction, setPrediction] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+interface PredictionResult {
+  prediction: number;
+  confidence: number;
+}
 
-  const handleInputChange = (index, value) => {
+const DEFAULT_FEATURES = ['1.0', '2.0', '3.0', '4.0', '5.0'];
+
+function App() {
+  const [features, setFeatures] = useState<string[]>(DEFAULT_FEATURES);
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const handleInputChange = (index: number, value: string): void => {
     const newFeatures = [...features];
     newFeatures[index] = value;
     setFeatures(newFeatures);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -45,17 +52,17 @@ function App() {
         throw new Error('予測の取得に失敗しました');
       }
 
-      const result = await response.json();
+      const result: PredictionResult = await response.json();
       setPrediction(result);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setFeatures(['', '', '', '', '']);
+  const handleReset = (): void => {
+    setFeatures(DEFAULT_FEATURES);
     setPrediction(null);
     setError('');
   };
@@ -81,7 +88,7 @@ function App() {
                   type="number"
                   step="any"
                   value={feature}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(index, e.target.value)}
                   placeholder={`特徴量${index + 1}を入力`}
                   required
                 />
@@ -90,15 +97,15 @@ function App() {
           </div>
 
           <div className="button-group">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading || features.some(f => f === '')}
               className="predict-button"
             >
               {loading ? '予測中...' : '予測実行'}
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleReset}
               className="reset-button"
             >
@@ -130,7 +137,7 @@ function App() {
               </div>
             </div>
             <div className="confidence-bar">
-              <div 
+              <div
                 className="confidence-fill"
                 style={{ width: `${prediction.confidence * 100}%` }}
               ></div>

@@ -24,7 +24,12 @@ nest_asyncio.apply() # Jupyter上でFastAPIを動かすための設定
 # CORSの設定（Reactアプリからのアクセスを許可）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Reactアプリのオリジン
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3100",
+        "http://127.0.0.1:3100"
+    ],  # Reactアプリのオリジン
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # OPTIONSを明示的に許可
     allow_headers=["*"],
