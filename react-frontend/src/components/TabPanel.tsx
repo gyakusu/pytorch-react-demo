@@ -95,25 +95,27 @@ export const TabPanel = memo<TabPanelProps>(({
     <div className="tab-panel">
       <h3>{tabId.toUpperCase()} コンテンツ</h3>
       <div className={`tab-content ${isTab1 ? 'two-column-layout' : ''}`}>
-        <div className="left-column">
-          {isTab1 && (
-            <ParameterSelector
-              selectedParams={selectedParams}
-              paramValues={paramValues}
-              onToggleParam={handleToggleParam}
-              onValueChange={handleParamValueChange}
-            />
-          )}
+        {isTab1 ? (
+          <>
+            <div className="left-column">
+              <ParameterSelector
+                selectedParams={selectedParams}
+                paramValues={paramValues}
+                onToggleParam={handleToggleParam}
+                onValueChange={handleParamValueChange}
+              />
+              <InputSection tabId={tabId} inputValue={inputValue} onChange={handleChange} />
+            </div>
+            <div className="right-column">
+              {loading ? (
+                <div>読み込み中...</div>
+              ) : (
+                <MultiSectionBarChart sections={sections} />
+              )}
+            </div>
+          </>
+        ) : (
           <InputSection tabId={tabId} inputValue={inputValue} onChange={handleChange} />
-        </div>
-        {isTab1 && (
-          <div className="right-column">
-            {loading ? (
-              <div>読み込み中...</div>
-            ) : (
-              <MultiSectionBarChart sections={sections} />
-            )}
-          </div>
         )}
       </div>
     </div>
