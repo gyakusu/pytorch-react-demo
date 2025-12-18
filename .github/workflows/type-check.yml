@@ -1,0 +1,53 @@
+name: Type Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  frontend-typecheck:
+    name: Frontend Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: react-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./react-frontend
+        run: npm ci
+
+      - name: Run TypeScript type check
+        working-directory: ./react-frontend
+        run: npx tsc --noEmit
+
+  backend-typecheck:
+    name: Backend Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy torch fastapi pydantic uvicorn nest-asyncio
+
+      - name: Run mypy type check
+        run: mypy api.py --strict --ignore-missing-imports
