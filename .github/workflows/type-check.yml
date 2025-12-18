@@ -7,6 +7,27 @@ on:
       - develop
 
 jobs:
+  frontend-typecheck:
+    name: Frontend Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./react-frontend
+        run: npm ci
+
+      - name: Run TypeScript type check
+        working-directory: ./react-frontend
+        run: npm run type-check
+
   backend-typecheck:
     name: Backend Type Check
     runs-on: ubuntu-latest
