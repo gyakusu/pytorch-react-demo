@@ -19,7 +19,14 @@ const TAB_METAS: readonly TabMeta[] = [
 function App() {
   const [features, setFeatures] = useState<string[]>(DEFAULT_FEATURES);
   const { result: prediction, loading, error, predict, reset: resetPrediction, setError } = usePrediction();
-  const { activeTab, currentTabContext, switchTab, updateTabContext } = useTabs();
+  const {
+    activeTab,
+    currentTabContext,
+    switchTab,
+    updateTabContext,
+    updateParamSelection,
+    updateParamValue,
+  } = useTabs();
 
   // 純粋関数を使った不変な配列更新（useCallbackで安定化）
   const handleInputChange = useCallback((index: number, value: string): void => {
@@ -76,7 +83,11 @@ function App() {
         <TabPanel
           tabId={activeTab}
           inputValue={currentTabContext.inputValue}
+          selectedParams={currentTabContext.selectedParams || []}
+          paramValues={currentTabContext.paramValues || {}}
           onInputChange={updateTabContext}
+          onParamSelectionChange={updateParamSelection}
+          onParamValueChange={updateParamValue}
         />
 
         {/* 既存の機械学習予測機能 */}
